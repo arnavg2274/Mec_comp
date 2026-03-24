@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RestroReach — Restaurant Email Campaign Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #e8ff5a;
+    --accent2: #ff6b35;
+    --text: #f0ede8;
+    --muted: #888;
+    --green: #4ade80;
+    --red: #f87171;
+    --radius: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.7; }
+  }
+
+  .header-stats {
+    display: flex; gap: 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .header-stats span { color: var(--accent); }
+
+  /* Layout */
+  .container {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    height: calc(100vh - 65px);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* Import area */
+  .import-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    position: relative;
+  }
+
+  .import-zone:hover, .import-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(232, 255, 90, 0.04);
+  }
+
+  .import-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+  }
+
+  .import-icon { font-size: 1.5rem; margin-bottom: 6px; }
+  .import-text { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+  .import-text strong { color: var(--text); }
+
+  /* Manual add */
+  .input-row {
+    display: flex; gap: 8px; margin-bottom: 8px;
+  }
+
+  input[type="text"], input[type="email"], textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    padding: 9px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  textarea { resize: vertical; min-height: 90px; }
+
+  .btn {
+    background: var(--accent);
+    color: #0d0d0d;
+    border: none;
+    border-radius: var(--radius);
+    padding: 9px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+
+  .btn:hover { background: #f5ff7a; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--surface2); transform: none; }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+  }
+  .btn-danger:hover { background: rgba(248, 113, 113, 0.1); transform: none; }
+
+  .btn-sm { padding: 6px 10px; font-size: 0.7rem; }
+
+  /* Contact list */
+  .list-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 12px;
+  }
+
+  .search-bar {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .contact-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .contact-list::-webkit-scrollbar { width: 4px; }
+  .contact-list::-webkit-scrollbar-track { background: transparent; }
+  .contact-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .contact-item:hover { background: var(--surface2); }
+  .contact-item.selected { background: var(--surface2); border-color: var(--border); }
+
+  .contact-check {
+    width: 16px; height: 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 10px;
+    transition: all 0.15s;
+  }
+
+  .contact-item.checked .contact-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0d0d0d;
+  }
+
+  .contact-info { flex: 1; min-width: 0; }
+
+  .contact-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .contact-email {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .contact-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 20px;
+    font-weight: 600;
+    background: rgba(74, 222, 128, 0.12);
+    color: var(--green);
+    flex-shrink: 0;
+  }
+
+  .contact-badge.sent {
+    background: rgba(232, 255, 90, 0.12);
+    color: var(--accent);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 2rem; margin-bottom: 10px; }
+  .empty-state p { font-size: 0.78rem; line-height: 1.6; }
+
+  /* Main content */
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .compose-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 32px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 3px;
+    width: fit-content;
+  }
+
+  .tab {
+    padding: 7px 18px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+  }
+
+  .tab.active {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Compose */
+  .compose-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .field-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .field-group.full { grid-column: 1 / -1; }
+
+  .template-chips {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+
+  .chip {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--muted);
+  }
+
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Preview panel */
+  .preview-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-top: 16px;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    font-family: 'Instrument Serif', serif;
+    color: var(--text);
+    min-height: 160px;
+  }
+
+  /* Recipients bar */
+  .recipients-bar {
+    padding: 12px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .recipient-tag {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px 3px 8px;
+    font-size: 0.7rem;
+  }
+
+  .recipient-tag .remove {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.75rem;
+    transition: color 0.15s;
+  }
+
+  .recipient-tag .remove:hover { color: var(--red); }
+
+  /* Send bar */
+  .send-bar {
+    border-top: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg);
+  }
+
+  .send-info {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .send-info strong { color: var(--text); }
+
+  .send-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* Progress */
+  .progress-bar-wrap {
+    background: var(--surface);
+    border-radius: 20px;
+    height: 6px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 20px;
+    transition: width 0.4s ease;
+  }
+
+  /* Send method modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    width: 480px;
+    max-width: 90vw;
+    transform: translateY(20px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+  }
+
+  .modal p { font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+
+  .method-cards {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
+  }
+
+  .method-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .method-card:hover, .method-card.selected {
+    border-color: var(--accent);
+    background: rgba(232, 255, 90, 0.04);
+  }
+
+  .method-card .method-icon { font-size: 1.4rem; margin-bottom: 6px; }
+  .method-card .method-name { font-size: 0.78rem; font-weight: 700; margin-bottom: 2px; }
+  .method-card .method-desc { font-size: 0.68rem; color: var(--muted); line-height: 1.4; }
+
+  .smtp-fields { display: none; }
+  .smtp-fields.show { display: block; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    font-size: 0.78rem;
+    z-index: 2000;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); }
+  .toast.error { border-color: var(--red); }
+
+  /* Stats cards */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+
+  .stat-value {
+    font-family: 'Instrument Serif', serif;
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* Campaign log */
+  .log-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+  .log-table th {
+    text-align: left; padding: 8px 12px;
+    color: var(--muted);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .log-table td { padding: 10px 12px; border-bottom: 1px solid rgba(42,42,42,0.5); }
+  .log-table tr:hover td { background: var(--surface); }
+
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 20px;
+    font-size: 0.65rem; font-weight: 700;
+  }
+
+  .status-pill.sent { background: rgba(232,255,90,0.12); color: var(--accent); }
+  .status-pill.pending { background: rgba(136,136,136,0.12); color: var(--muted); }
+  .status-pill.failed { background: rgba(248,113,113,0.12); color: var(--red); }
+
+  /* Help notes */
+  .note {
+    background: rgba(232, 255, 90, 0.06);
+    border: 1px solid rgba(232, 255, 90, 0.2);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 0.75rem;
+    color: rgba(232, 255, 90, 0.8);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .note a { color: var(--accent); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    RestroReach
+  </div>
+  <div class="header-stats">
+    Contacts: <span id="hdr-total">0</span> &nbsp;|&nbsp;
+    Selected: <span id="hdr-selected">0</span> &nbsp;|&nbsp;
+    Sent: <span id="hdr-sent">0</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <!-- Import -->
+    <div class="sidebar-section">
+      <div class="section-label">Import</div>
+      <div class="import-zone" id="drop-zone">
+        <input type="file" id="file-input" accept=".json,.csv" multiple>
+        <div class="import-icon">📁</div>
+        <div class="import-text">
+          <strong>Drop JSON or CSV</strong><br>
+          from restaurant_scraper.py output
+        </div>
+      </div>
+    </div>
+
+    <!-- Manual add -->
+    <div class="sidebar-section">
+      <div class="section-label">Add Manually</div>
+      <div class="input-row">
+        <input type="text" id="add-name" placeholder="Restaurant name">
+      </div>
+      <div class="input-row">
+        <input type="email" id="add-email" placeholder="email@restaurant.com.au">
+        <button class="btn btn-sm" onclick="addContact()">+</button>
+      </div>
+    </div>
+
+    <!-- List controls -->
+    <div class="list-header">
+      <div class="section-label" style="margin:0">Contacts</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="selectAll()">All</button>
+        <button class="btn btn-ghost btn-sm" onclick="selectNone()">None</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAll()">Clear</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="search" placeholder="🔍  Search contacts..." oninput="renderContacts()">
+    </div>
+
+    <div class="contact-list" id="contact-list">
+      <div class="empty-state">
+        <div class="empty-icon">🍽️</div>
+        <p>Import a JSON/CSV from the scraper<br>or add contacts manually</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="compose-area">
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('compose', this)">✍️ Compose</div>
+        <div class="tab" onclick="switchTab('preview', this)">👁 Preview</div>
+        <div class="tab" onclick="switchTab('log', this)">📊 Campaign Log</div>
+      </div>
+
+      <!-- Compose Tab -->
+      <div class="tab-content active" id="tab-compose">
+
+        <div class="note">
+          ⚠️ <strong>Legal reminder:</strong> Under Australia's Spam Act 2003, you must have consent or a legitimate business reason to email. Always include an unsubscribe option. This tool generates <em>mailto:</em> links or SMTP sends — you're responsible for compliance.
+        </div>
+
+        <div class="recipients-bar" id="recipients-bar">
+          <span style="font-size:0.72rem;color:var(--muted);font-weight:700;letter-spacing:0.06em;text-transform:uppercase">TO:</span>
+          <span id="recipients-empty" style="font-size:0.75rem;color:var(--muted)">Select contacts from the sidebar →</span>
+        </div>
+
+        <div class="template-chips">
+          <span style="font-size:0.68rem;color:var(--muted);align-self:center;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Templates:</span>
+          <div class="chip" onclick="loadTemplate('partnership')">🤝 Partnership</div>
+          <div class="chip" onclick="loadTemplate('supplier')">📦 Supplier</div>
+          <div class="chip" onclick="loadTemplate('event')">🎉 Event / Venue</div>
+          <div class="chip" onclick="loadTemplate('menu')">🍴 Menu Promo</div>
+          <div class="chip" onclick="loadTemplate('blank')">✨ Blank</div>
+        </div>
+
+        <div class="compose-grid">
+          <div class="field-group">
+            <div class="field-label">From Name</div>
+            <input type="text" id="from-name" placeholder="Your Name / Business">
+          </div>
+          <div class="field-group">
+            <div class="field-label">From Email</div>
+            <input type="email" id="from-email" placeholder="you@yourdomain.com">
+          </div>
+          <div class="field-group full">
+            <div class="field-label">Subject Line</div>
+            <input type="text" id="subject" placeholder="e.g. Partnership opportunity for {restaurant}">
+          </div>
+          <div class="field-group full">
+            <div class="field-label">Message Body <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">— use {restaurant} as placeholder for name</span></div>
+            <textarea id="body" rows="10" placeholder="Hi {restaurant} team,&#10;&#10;My name is ..."></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Preview Tab -->
+      <div class="tab-content" id="tab-preview">
+        <div class="field-group" style="margin-bottom:16px">
+          <div class="field-label">Preview for restaurant</div>
+          <input type="text" id="preview-name" placeholder="Type a restaurant name to preview personalisation..." oninput="updatePreview()">
+        </div>
+        <div class="field-label" style="margin-bottom:6px">Subject</div>
+        <div class="preview-box" id="preview-subject" style="min-height:40px;margin-bottom:12px;font-family:'DM Mono',monospace;font-size:0.78rem"></div>
+        <div class="field-label" style="margin-bottom:6px">Body</div>
+        <div class="preview-box" id="preview-body"></div>
+      </div>
+
+      <!-- Log Tab -->
+      <div class="tab-content" id="tab-log">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Total Contacts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--accent)" id="stat-sent">0</div>
+            <div class="stat-label">Emails Sent</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--muted)" id="stat-pending">0</div>
+            <div class="stat-label">Pending</div>
+          </div>
+        </div>
+
+        <div class="progress-bar-wrap" style="margin-bottom:20px">
+          <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+
+        <table class="log-table" id="log-table">
+          <thead>
+            <tr>
+              <th>Restaurant</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="log-body">
+            <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">No campaigns sent yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Send bar -->
+    <div class="send-bar">
+      <div class="send-info">
+        <strong id="sb-count">0</strong> recipients selected
+      </div>
+      <div class="send-actions">
+        <button class="btn btn-ghost" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn btn-ghost" onclick="openMailto()">📧 Open in Mail App</button>
+        <button class="btn" onclick="openSendModal()">🚀 Send Campaign</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Send Modal -->
+<div class="modal-overlay" id="send-modal">
+  <div class="modal">
+    <h2>Send Campaign</h2>
+    <p>Choose how you'd like to send emails to <strong id="modal-count">0</strong> recipients.</p>
+
+    <div class="method-cards">
+      <div class="method-card selected" id="mc-mailto" onclick="selectMethod('mailto')">
+        <div class="method-icon">📬</div>
+        <div class="method-name">Mail App (mailto)</div>
+        <div class="method-desc">Opens your default email client. Best for small batches.</div>
+      </div>
+      <div class="method-card" id="mc-clipboard" onclick="selectMethod('clipboard')">
+        <div class="method-icon">📋</div>
+        <div class="method-name">Copy All Emails</div>
+        <div class="method-desc">Copy a list of all recipient emails to clipboard.</div>
+      </div>
+    </div>
+
+    <div class="smtp-fields" id="smtp-fields">
+      <hr>
+      <div class="field-group" style="margin-bottom:10px">
+        <div class="field-label">SMTP Host</div>
+        <input type="text" id="smtp-host" placeholder="smtp.gmail.com">
+      </div>
+      <div class="compose-grid" style="margin-bottom:10px">
+        <div class="field-group">
+          <div class="field-label">Port</div>
+          <input type="text" id="smtp-port" placeholder="587">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Username</div>
+          <input type="text" id="smtp-user" placeholder="you@gmail.com">
+        </div>
+      </div>
+      <div class="field-group" style="margin-bottom:10px">
+        <div class="field-label">App Password</div>
+        <input type="text" id="smtp-pass" placeholder="Gmail app password (not your login)">
+      </div>
+      <div class="note" style="margin-bottom:0">For Gmail: enable 2FA → create an <a href="https://myaccount.google.com/apppasswords" target="_blank">App Password</a>. Use <code>smtp.gmail.com:587</code>.</div>
+    </div>
+
+    <hr>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="executeSend()">Send Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let contacts = []; // {name, email, checked, status, sentAt}
+  let sendMethod = 'mailto';
+  let campaignLog = [];
+
+  // ── File Import ────────────────────────────────────────────────────────────
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    [...e.dataTransfer.files].forEach(processFile);
+  });
+  fileInput.addEventListener('change', e => { [...e.target.files].forEach(processFile); });
+
+  function processFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const text = e.target.result;
+      if (file.name.endsWith('.json')) {
+        try {
+          const data = JSON.parse(text);
+          const items = data.restaurants || data;
+          if (Array.isArray(items)) {
+            let added = 0;
+            items.forEach(r => {
+              if (r.email && !contacts.find(c => c.email === r.email)) {
+                contacts.push({ name: r.name || r.email, email: r.email, checked: true, status: 'pending', sentAt: null });
+                added++;
+              }
+            });
+            toast(`Imported ${added} contacts from ${file.name}`, 'success');
+          }
+        } catch { toast('Invalid JSON file', 'error'); }
+      } else if (file.name.endsWith('.csv')) {
+        const lines = text.split('\n').slice(1);
+        let added = 0;
+        lines.forEach(line => {
+          const cols = line.split(',').map(c => c.replace(/"/g, '').trim());
+          const name = cols[0], email = cols[1];
+          if (email && email.includes('@') && !contacts.find(c => c.email === email)) {
+            contacts.push({ name: name || email, email, checked: true, status: 'pending', sentAt: null });
+            added++;
+          }
+        });
+        toast(`Imported ${added} contacts from ${file.name}`, 'success');
+      }
+      renderContacts();
+      updateStats();
+    };
+    reader.readAsText(file);
+  }
+
+  // ── Contacts ───────────────────────────────────────────────────────────────
+  function addContact() {
+    const name = document.getElementById('add-name').value.trim();
+    const email = document.getElementById('add-email').value.trim();
+    if (!email || !email.includes('@')) { toast('Enter a valid email', 'error'); return; }
+    if (contacts.find(c => c.email === email)) { toast('Already added', 'error'); return; }
+    contacts.push({ name: name || email, email, checked: true, status: 'pending', sentAt: null });
+    document.getElementById('add-name').value = '';
+    document.getElementById('add-email').value = '';
+    renderContacts(); updateStats();
+    toast('Contact added', 'success');
+  }
+
+  function toggleContact(email) {
+    const c = contacts.find(c => c.email === email);
+    if (c) c.checked = !c.checked;
+    renderContacts(); updateStats();
+  }
+
+  function selectAll() { contacts.forEach(c => c.checked = true); renderContacts(); updateStats(); }
+  function selectNone() { contacts.forEach(c => c.checked = false); renderContacts(); updateStats(); }
+  function clearAll() {
+    if (!confirm('Remove all contacts?')) return;
+    contacts = []; renderContacts(); updateStats();
+    toast('Contacts cleared', 'success');
+  }
+
+  function renderContacts() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const list = document.getElementById('contact-list');
+    const filtered = contacts.filter(c =>
+      c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
+    );
+
+    if (filtered.length === 0) {
+      list.innerHTML = contacts.length === 0
+        ? `<div class="empty-state"><div class="empty-icon">🍽️</div><p>Import a JSON/CSV from the scraper<br>or add contacts manually</p></div>`
+        : `<div class="empty-state"><div class="empty-icon">🔍</div><p>No contacts match</p></div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(c => `
+      <div class="contact-item ${c.checked ? 'checked' : ''}" onclick="toggleContact('${c.email}')">
+        <div class="contact-check">${c.checked ? '✓' : ''}</div>
+        <div class="contact-info">
+          <div class="contact-name">${c.name}</div>
+          <div class="contact-email">${c.email}</div>
+        </div>
+        ${c.status === 'sent' ? '<div class="contact-badge sent">sent</div>' : ''}
+      </div>
+    `).join('');
+
+    updateRecipientsBar();
+  }
+
+  function updateRecipientsBar() {
+    const bar = document.getElementById('recipients-bar');
+    const empty = document.getElementById('recipients-empty');
+    const selected = contacts.filter(c => c.checked);
+
+    // Remove old tags
+    bar.querySelectorAll('.recipient-tag').forEach(t => t.remove());
+    empty.style.display = selected.length === 0 ? '' : 'none';
+
+    const MAX_SHOW = 6;
+    selected.slice(0, MAX_SHOW).forEach(c => {
+      const tag = document.createElement('div');
+      tag.className = 'recipient-tag';
+      tag.innerHTML = `<span>${c.name}</span><span class="remove" onclick="toggleContact('${c.email}');event.stopPropagation()">×</span>`;
+      bar.appendChild(tag);
+    });
+
+    if (selected.length > MAX_SHOW) {
+      const more = document.createElement('div');
+      more.className = 'recipient-tag';
+      more.style.background = 'rgba(232,255,90,0.1)';
+      more.style.color = 'var(--accent)';
+      more.innerHTML = `+${selected.length - MAX_SHOW} more`;
+      bar.appendChild(more);
+    }
+  }
+
+  function updateStats() {
+    const total = contacts.length;
+    const selected = contacts.filter(c => c.checked).length;
+    const sent = contacts.filter(c => c.status === 'sent').length;
+
+    document.getElementById('hdr-total').textContent = total;
+    document.getElementById('hdr-selected').textContent = selected;
+    document.getElementById('hdr-sent').textContent = sent;
+    document.getElementById('sb-count').textContent = selected;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-sent').textContent = sent;
+    document.getElementById('stat-pending').textContent = total - sent;
+
+    const pct = total > 0 ? Math.round((sent / total) * 100) : 0;
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  // ── Templates ──────────────────────────────────────────────────────────────
+  const TEMPLATES = {
+    partnership: {
+      subject: 'Partnership Opportunity — {restaurant}',
+      body: `Hi {restaurant} team,
+
+I hope this message finds you well! My name is [Your Name] from [Your Company].
+
+I came across your restaurant and love what you're doing. I'd love to explore a potential partnership that could benefit both our businesses.
+
+[Describe your offering in 2-3 sentences]
+
+Would you be open to a quick 15-minute call this week to explore this further?
+
+Best regards,
+[Your Name]
+[Your Phone]
+[Your Website]
+
+To unsubscribe, reply with "unsubscribe".`
+    },
+    supplier: {
+      subject: '[Your Product] — Supplier Introduction to {restaurant}',
+      body: `Hi {restaurant},
+
+I'm reaching out from [Your Company], an Australian supplier of [product/service].
+
+We work with restaurants across Melbourne to [key benefit]. Our clients typically see [result/outcome].
+
+I'd love to send you some samples or arrange a brief demonstration at a time that suits you.
+
+Would Tuesday or Wednesday next week work for a quick visit?
+
+Thanks for your time,
+[Your Name]
+[Your Company]
+[Phone]
+
+To opt out of future emails, simply reply "unsubscribe".`
+    },
+    event: {
+      subject: 'Private Event & Function Inquiry — {restaurant}',
+      body: `Hi {restaurant} team,
+
+I'm looking for a venue for an upcoming event and your restaurant came highly recommended.
+
+Event details:
+- Date: [Date]
+- Guest count: [Number]
+- Type: [Dinner / cocktail / celebration]
+
+Do you offer private hire or set menus for functions? I'd love to understand your options and pricing.
+
+Looking forward to hearing from you,
+[Your Name]
+[Your Email / Phone]`
+    },
+    menu: {
+      subject: 'Menu Feature Opportunity — {restaurant}',
+      body: `G'day {restaurant},
+
+I'm [Your Name] from [Publication/Platform]. We'd love to feature your menu and dining experience in our upcoming [article/newsletter/guide] focused on the best of Melbourne dining.
+
+This is a complimentary feature — no cost to you. We'd love to:
+- Highlight your signature dishes
+- Share your story with our audience of [X] food lovers
+
+If you're interested, just reply to this email and we'll set up a time to chat.
+
+Cheers,
+[Your Name]
+[Publication]
+[Website]
+
+Unsubscribe by replying "unsubscribe".`
+    },
+    blank: {
+      subject: '',
+      body: ''
+    }
+  };
+
+  function loadTemplate(key) {
+    const t = TEMPLATES[key];
+    document.getElementById('subject').value = t.subject;
+    document.getElementById('body').value = t.body;
+    updatePreview();
+    toast(`Template loaded: ${key}`, 'success');
+  }
+
+  function personalise(text, name) {
+    return text.replace(/\{restaurant\}/gi, name || 'Restaurant');
+  }
+
+  function updatePreview() {
+    const name = document.getElementById('preview-name').value || 'Sample Restaurant';
+    document.getElementById('preview-subject').textContent =
+      personalise(document.getElementById('subject').value, name);
+    document.getElementById('preview-body').textContent =
+      personalise(document.getElementById('body').value, name);
+  }
+
+  document.getElementById('subject').addEventListener('input', updatePreview);
+  document.getElementById('body').addEventListener('input', updatePreview);
+
+  // ── Tabs ───────────────────────────────────────────────────────────────────
+  function switchTab(id, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-' + id).classList.add('active');
+    if (id === 'preview') updatePreview();
+    if (id === 'log') updateStats();
+  }
+
+  // ── Send ───────────────────────────────────────────────────────────────────
+  function openSendModal() {
+    const selected = contacts.filter(c => c.checked);
+    if (selected.length === 0) { toast('Select at least one recipient', 'error'); return; }
+    document.getElementById('modal-count').textContent = selected.length;
+    document.getElementById('send-modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('send-modal').classList.remove('open');
+  }
+
+  function selectMethod(method) {
+    sendMethod = method;
+    document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('mc-' + method).classList.add('selected');
+    document.getElementById('smtp-fields').classList.toggle('show', method === 'smtp');
+  }
+
+  function executeSend() {
+    const selected = contacts.filter(c => c.checked);
+    const subject = document.getElementById('subject').value;
+    const body = document.getElementById('body').value;
+
+    if (!subject && sendMethod !== 'clipboard') { toast('Add a subject line', 'error'); return; }
+
+    closeModal();
+
+    if (sendMethod === 'mailto') {
+      // Open mailto for each (batched in BCC for large lists)
+      if (selected.length <= 5) {
+        selected.forEach(c => {
+          const s = encodeURIComponent(personalise(subject, c.name));
+          const b = encodeURIComponent(personalise(body, c.name));
+          setTimeout(() => window.open(`mailto:${c.email}?subject=${s}&body=${b}`, '_blank'), 200);
+        });
+      } else {
+        // Use BCC for larger batches
+        const bcc = selected.map(c => c.email).join(',');
+        const s = encodeURIComponent(personalise(subject, 'Team'));
+        const b = encodeURIComponent(personalise(body, 'Team'));
+        window.open(`mailto:?bcc=${encodeURIComponent(bcc)}&subject=${s}&body=${b}`, '_blank');
+      }
+      markAsSent(selected, 'sent');
+      toast(`Opened mail app for ${selected.length} recipients`, 'success');
+
+    } else if (sendMethod === 'clipboard') {
+      const emails = selected.map(c => c.email).join('\n');
+      navigator.clipboard.writeText(emails).then(() => {
+        toast(`${selected.length} emails copied to clipboard`, 'success');
+        markAsSent(selected, 'sent');
+      });
+    }
+  }
+
+  function markAsSent(list, status) {
+    const now = new Date().toLocaleTimeString('en-AU');
+    list.forEach(c => {
+      c.status = status;
+      c.sentAt = now;
+      campaignLog.push({ name: c.name, email: c.email, status, time: now });
+    });
+    renderContacts();
+    updateStats();
+    updateLog();
+  }
+
+  function updateLog() {
+    const tbody = document.getElementById('log-body');
+    if (campaignLog.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">No campaigns sent yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = [...campaignLog].reverse().map(e => `
+      <tr>
+        <td>${e.name}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:0.7rem">${e.email}</td>
+        <td><span class="status-pill ${e.status}">${e.status}</span></td>
+        <td style="color:var(--muted)">${e.time}</td>
+      </tr>
+    `).join('');
+  }
+
+  // ── Mailto quick open ──────────────────────────────────────────────────────
+  function openMailto() {
+    const selected = contacts.filter(c => c.checked);
+    if (selected.length === 0) { toast('Select recipients first', 'error'); return; }
+    const bcc = selected.map(c => c.email).join(',');
+    const s = encodeURIComponent(document.getElementById('subject').value || '');
+    window.open(`mailto:?bcc=${encodeURIComponent(bcc)}&subject=${s}`, '_blank');
+  }
+
+  // ── Export ─────────────────────────────────────────────────────────────────
+  function exportCSV() {
+    if (contacts.length === 0) { toast('No contacts to export', 'error'); return; }
+    const rows = ['Name,Email,Status'];
+    contacts.forEach(c => rows.push(`"${c.name}","${c.email}","${c.status}"`));
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'restaurant_contacts.csv';
+    a.click();
+    toast('CSV exported', 'success');
+  }
+
+  // ── Toast ──────────────────────────────────────────────────────────────────
+  let toastTimer;
+  function toast(msg, type = 'success') {
+    const el = document.getElementById('toast');
+    const icons = { success: '✓', error: '✕' };
+    el.innerHTML = `<span>${icons[type] || '•'}</span> ${msg}`;
+    el.className = `toast show ${type}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  // Close modal on overlay click
+  document.getElementById('send-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('send-modal')) closeModal();
+  });
+
+  // Load first template
+  loadTemplate('partnership');
+  updateStats();
+</script>
+</body>
+</html>
